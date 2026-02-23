@@ -85,19 +85,15 @@ class stupidAI(connect4Player):
                 return
 
 class connect4AI(connect4Player):
-    
     def is_game_over(self, env, last_move, last_player):
-        
         if last_move < 0:
             return False
-        
         
         i = env.topPosition[last_move] + 1
         j = last_move
         
         if i >= env.shape[0]:
             return False
-        
         
         count = 0
         for col in range(max(0, j-3), min(env.shape[1], j+4)):
@@ -117,11 +113,9 @@ class connect4AI(connect4Player):
             else:
                 count = 0
         
-        # check diagonal, bleft to tright
         count = 0
         start_row = i - min(i, j)
         start_col = j - min(i, j)
-
         for offset in range(7):
             r = start_row + offset
             c = start_col + offset
@@ -134,14 +128,10 @@ class connect4AI(connect4Player):
             else:
                 count = 0
         
-        # check diagonal tleft to bright
         count = 0
         start_row = i + min(env.shape[0] - 1 - i, j)
         start_col = j - min(env.shape[0] - 1 - i, j)
-        
-        
         for offset in range(7):
-
             r = start_row - offset
             c = start_col + offset
             if r < 0 or c >= env.shape[1]:
@@ -156,22 +146,18 @@ class connect4AI(connect4Player):
         if all(env.topPosition < 0):
             return True
         
-
         return False
     
     def evaluate(self, env, last_move, last_player):
-        
         if last_move >= 0 and self.is_game_over(env, last_move, last_player):
             if last_player == self.position:
-                return 1000000  # We won
+                return 1000000
             else:
-                return -1000000  # Opponent won
-        
+                return -1000000
         
         score = 0
         opponent = 3 - self.position
         
-        # cardinals 
         for row in range(env.shape[0]):
             for col in range(env.shape[1] - 3):
                 window = [env.board[row][col+i] for i in range(4)]
@@ -182,7 +168,6 @@ class connect4AI(connect4Player):
                 window = [env.board[row+i][col] for i in range(4)]
                 score += self.evaluate_window(window, self.position, opponent)
         
-        # Diagonals bl to tr and tl to br
         for row in range(env.shape[0] - 3):
             for col in range(env.shape[1] - 3):
                 window = [env.board[row+i][col+i] for i in range(4)]
@@ -193,7 +178,6 @@ class connect4AI(connect4Player):
                 window = [env.board[row-i][col+i] for i in range(4)]
                 score += self.evaluate_window(window, self.position, opponent)
         
-        
         center_col = env.shape[1] // 2
         center_count = sum(1 for row in range(env.shape[0]) if env.board[row][center_col] == self.position)
         score += center_count * 3
@@ -201,14 +185,11 @@ class connect4AI(connect4Player):
         return score
     
     def evaluate_window(self, window, player, opponent):
-    
         score = 0
         player_count = window.count(player)
         opponent_count = window.count(opponent)
         empty_count = window.count(0)
         
-
-        # Scoring 
         if player_count == 4:
             score += 100000
         elif player_count == 3 and empty_count == 1:
@@ -216,21 +197,17 @@ class connect4AI(connect4Player):
         elif player_count == 2 and empty_count == 2:
             score += 10
         
-        # Punish opponent pieces
         if opponent_count == 3 and empty_count == 1:
-            score -= 80 
+            score -= 80
         elif opponent_count == 2 and empty_count == 2:
             score -= 5
         
-
         return score
     
     def check_immediate_move(self, env):
-        
         valid_moves = [col for col in range(env.shape[1]) if env.topPosition[col] >= 0]
         opponent = 3 - self.position
         
-        # can we immediately win?
         for move in valid_moves:
             test_env = env.getEnv()
             row = test_env.topPosition[move]
@@ -238,8 +215,6 @@ class connect4AI(connect4Player):
             test_env.topPosition[move] -= 1
             if self.is_game_over(test_env, move, self.position):
                 return move
-        
-        # is opponent about to win? block them!
         
         for move in valid_moves:
             test_env = env.getEnv()
@@ -250,7 +225,6 @@ class connect4AI(connect4Player):
                 return move
         
         return None
-
 
 class minimaxAI(connect4AI):
     def play(self, env, move_dict):
@@ -278,7 +252,7 @@ class minimaxAI(connect4AI):
         valid_moves = [col for col in range(env.shape[1]) if env.topPosition[col] >= 0]
         
         for move in valid_moves:
-            if time.time() - self.start_time > 2.955:
+            if time.time() - self.start_time > 2.95:
                 break
             new_env = env.getEnv()
             row = new_env.topPosition[move]
@@ -296,7 +270,7 @@ class minimaxAI(connect4AI):
         return best_move
     
     def max_value(self, env, depth, last_move, last_player):
-        if time.time() - self.start_time > 2.955:
+        if time.time() - self.start_time > 2.95:
             return self.evaluate(env, last_move, last_player)
         
         if self.is_game_over(env, last_move, last_player):
@@ -319,7 +293,7 @@ class minimaxAI(connect4AI):
         return value
     
     def min_value(self, env, depth, last_move, last_player):
-        if time.time() - self.start_time > 2.955:
+        if time.time() - self.start_time > 2.95:
             return self.evaluate(env, last_move, last_player)
 
         if self.is_game_over(env, last_move, last_player):
@@ -378,7 +352,7 @@ class alphaBetaAI(connect4AI):
         valid_moves.sort(key=lambda x: abs(x - center))
         
         for move in valid_moves:
-            if time.time() - self.start_time > 2.955:
+            if time.time() - self.start_time > 2.95:
                 break
             new_env = env.getEnv()
             row = new_env.topPosition[move]
@@ -425,7 +399,7 @@ class alphaBetaAI(connect4AI):
         return value
     
     def min_value(self, env, depth, alpha, beta, last_move, last_player):
-        if time.time() - self.start_time > 2.955:
+        if time.time() - self.start_time > 2.95:
             return self.evaluate(env, last_move, last_player)
         
         if self.is_game_over(env, last_move, last_player):
